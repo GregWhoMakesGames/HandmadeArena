@@ -10,25 +10,24 @@
 #include <stdint.h>
 
 struct Arena {
-	uint8_t* Memory;
-	uint64_t Size;
+	uint32_t Capacity;
+	uint32_t Position;
+	void* Memory;
 };
 
-namespace Arenas {
-	Arena* ArenaAlloc(uint64_t cap);
-	void ArenaRelease(Arena* arena);
-	void ArenaSetAutoAlign(Arena* arena, uint64_t align);
+Arena* ArenaAlloc(const uint32_t cap);
+void ArenaRelease(Arena* arena);
+void ArenaSetAutoAlign(Arena* arena, const uint32_t align);
 
-	uint64_t ArenaPos(Arena* arena);
+uint32_t ArenaPos(const Arena* arena);
 
-	void* ArenaPushNoZero(Arena* arena, uint64_t size);
-	void* ArenaPushAligner(Arena* arena, uint64_t alignment);
-	void* ArenaPush(Arena* arena, uint64_t size);
+void* ArenaPushNoZero(Arena* arena, const uint32_t size);
+void* ArenaPushAligner(Arena* arena, const uint32_t alignment);
+void* ArenaPush(Arena* arena, const uint32_t size);
 
-	void ArenaPopTo(Arena* arena, uint64_t pos);
-	void ArenaPop(Arena* arena, uint64_t size);
-	void ArenaClear(Arena* arena);
-}
+void* ArenaPopTo(Arena* arena, const uint32_t pos);
+void* ArenaPop(Arena* arena, const uint32_t size);
+void ArenaClear(Arena* arena);
 
 //#define PushArrayNoZero(...)
 //#define ...
