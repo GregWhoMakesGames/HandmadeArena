@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1691388521 source:c:\users\gregk\documents\handmadecities\handmadearena\main.cpp
+	<iostream>
+	"Arena.h"
+
+1691389115 c:\users\gregk\documents\handmadecities\handmadearena\arena.h
+	<stdint.h>
+
