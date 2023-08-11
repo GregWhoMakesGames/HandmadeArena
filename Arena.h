@@ -17,7 +17,6 @@ struct Arena {
 
 Arena* ArenaAlloc(const uint32_t cap);
 void ArenaRelease(Arena* arena);
-void ArenaSetAutoAlign(Arena* arena, const uint32_t align);
 
 uint32_t ArenaPos(const Arena* arena);
 

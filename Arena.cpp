@@ -17,17 +17,6 @@ void ArenaRelease(Arena* arena)
 	free(arena);
 }
 
-void ArenaSetAutoAlign(Arena* arena, const uint32_t align)
-{
-	if (!arena)
-	{
-		return;
-	}
-
-	//TODO
-
-}
-
 uint32_t ArenaPos(const Arena* arena)
 {
 	if (!arena)
@@ -61,9 +50,14 @@ void* ArenaPushAligner(Arena* arena, const uint32_t alignment)
 		return nullptr;
 	}
 
-	return nullptr;
+	if (alignment == 0)
+	{
+		return nullptr;
+	}
 
-	//TODO
+	uint32_t padding = alignment - (arena->Position % alignment);
+	arena->Position += padding;
+	return arena->Memory + arena->Position;
 }
 
 void* ArenaPush(Arena* arena, const uint32_t size)
