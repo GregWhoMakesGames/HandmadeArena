@@ -4,5 +4,5 @@
 int main() {
 	std::cout << "hello";
 
-	Arena* arena = ArenaAlloc(16);
+	Arena* arena = ArenaAlloc(16, true);
 }

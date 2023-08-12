@@ -10,19 +10,21 @@
 #include <stdint.h>
 
 struct Arena {
+	bool IsHead;
 	uint32_t Capacity;
 	uint32_t Position;
 	void* Memory;
+	Arena* Next;
 };
 
-Arena* ArenaAlloc(const uint32_t cap);
+Arena* ArenaAlloc(const uint32_t cap, const bool isHead);
 void ArenaRelease(Arena* arena);
-
 uint32_t ArenaPos(const Arena* arena);
+Arena* GetArenaByPosition(Arena* arena, const uint32_t position);
 
-void* ArenaPushNoZero(Arena* arena, const uint32_t size);
-void* ArenaPushAligner(Arena* arena, const uint32_t alignment);
-void* ArenaPush(Arena* arena, const uint32_t size);
+void ArenaPushNoZero(Arena* arena, const uint32_t size);
+void ArenaPushAligner(Arena* arena, const uint32_t alignment);
+void ArenaPush(Arena* arena, const uint32_t size);
 
 void* ArenaPopTo(Arena* arena, const uint32_t pos);
 void* ArenaPop(Arena* arena, const uint32_t size);
