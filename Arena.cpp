@@ -5,12 +5,11 @@
 
 Arena* ArenaAlloc(const uint32_t capacity, const bool isHead)
 {
+	uint32_t bytesAllocated = sizeof(Arena) + capacity;
 	Arena* arena = (Arena*) malloc(sizeof(Arena) + capacity);
-	arena->IsHead = isHead;
 	arena->Capacity = capacity;
 	arena->Position = 0;
-	arena->Memory = arena + sizeof(Arena);
-	arena->Next = nullptr;
+	arena->Memory = (void*) (((uint32_t) arena) + sizeof(Arena));
 	return arena;
 }
 
@@ -21,17 +20,12 @@ void ArenaRelease(Arena* arena)
 		return;
 	}
 
-	if (arena->Next != nullptr)
-	{
-		ArenaRelease(arena->Next);
-	}
-
 	free(arena);
 }
 
 uint32_t ArenaPos(const Arena* arena)
 {
-	if (!arena || !arena->IsHead)
+	if (!arena)
 	{
 		return 0;
 	}
@@ -39,131 +33,91 @@ uint32_t ArenaPos(const Arena* arena)
 	return arena->Position;
 }
 
-Arena* GetArenaByPosition(const Arena* arena, const uint32_t position)
+void* ArenaPushNoZero(Arena* arena, uint32_t size)
 {
-	if (!arena && !arena->IsHead)
+	if (!arena)
 	{
 		return nullptr;
 	}
 
-	const Arena* currentArena = arena;
-	const uint32_t capacity = arena->Capacity;
-	uint32_t currentPosition = position;
-	while (currentPosition > capacity)
+	if ((size + arena->Position) > arena->Capacity)
 	{
-		if (arena->Next == nullptr)
-		{
-			return nullptr;
-		}
-
-		currentArena = arena->Next;
-		currentPosition -= capacity;
+		return nullptr;
 	}
 
-	return (Arena*) currentArena;
+	void* destination = arena->Memory + arena->Position;
+	arena->Position += size;
+	return destination;
 }
 
-void ArenaPushNoZero(Arena* arena, uint32_t size)
+void* ArenaPushAligner(Arena* arena, const uint32_t alignment)
 {
 	if (!arena)
 	{
-		return;
-	}
-
-	if (!arena->IsHead)
-	{
-		return;
-	}
-
-	Arena* currentArena = arena;
-	uint32_t currentPosition = arena->Position;
-	uint32_t capacity = arena->Capacity;
-
-	while (currentPosition > capacity)
-	{
-		currentPosition -= capacity;
-		arena = arena->Next;
-
-		if (arena == nullptr)
-		{
-			return;
-		}
-	}
-
-	uint32_t nextPosition = currentPosition + size;
-	if (nextPosition > capacity)
-	{
-		currentArena->Next = ArenaAlloc(capacity, false);
-		currentArena = currentArena->Next;
-		nextPosition = nextPosition % capacity;
-	}
-
-	currentArena->Position = nextPosition;
-}
-
-void ArenaPushAligner(Arena* arena, const uint32_t alignment)
-{
-	if (!arena)
-	{
-		return;
+		return nullptr;
 	}
 
 	if (alignment == 0)
 	{
-		return;
+		return nullptr;
 	}
+
+	void* destination = arena->Memory + arena->Position;
 
 	uint32_t padding = alignment - (arena->Position % alignment);
 	arena->Position += padding;
+	return destination;
 }
 
-void ArenaPush(Arena* arena, const uint32_t size)
-{
-	if (!arena)
-	{
-		return;
-	}
-
-	if (size + arena->Position > arena->Capacity)
-	{
-		return;
-	}
-
-	memset(arena->Memory + arena->Position, 0, size);
-	arena->Position += size;
-}
-
-void* ArenaPopTo(Arena* arena, const uint32_t pos)
+void* ArenaPush(Arena* arena, const uint32_t size)
 {
 	if (!arena)
 	{
 		return nullptr;
+	}
+
+	if ((size + arena->Position) > arena->Capacity)
+	{
+		return nullptr;
+	}
+
+	void* destination = (void*) (((uint32_t) arena->Memory) + arena->Position);
+	memset(destination, 0, size);
+	arena->Position += size;
+	return destination;
+}
+
+bool ArenaPopTo(Arena* arena, const uint32_t pos)
+{
+	if (!arena)
+	{
+		return false;
 	}
 
 	if (arena->Position <= pos)
 	{
-		return nullptr;
+		return false;
 	}
 
 	arena->Position = pos;
-	return arena->Memory + arena->Position;
+	return true;
 }
 
-void* ArenaPop(Arena* arena, const uint32_t size)
+bool ArenaPop(Arena* arena, const uint32_t size)
 {
 	if (!arena)
 	{
-		return nullptr;
+		return false;
 	}
 
 	const uint32_t usedSize = arena->Position;
 	if (size > usedSize)
 	{
-		return nullptr;
+		return false;
 	}
 
 	arena->Position -= size;
-	return arena->Memory + arena->Position;
+	return true;
 }
 
 void ArenaClear(Arena* arena)
